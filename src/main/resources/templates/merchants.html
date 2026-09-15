@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Merchants')}"></head>
+<body class="bg-zinc-950 font-sans text-zinc-100 antialiased">
+
+<div th:replace="~{fragments/layout :: chrome}"></div>
+<aside th:replace="~{fragments/layout :: sidebar('merchants')}"></aside>
+
+<div class="lg:pl-64">
+
+    <header class="sticky top-0 z-30 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-md">
+        <div class="flex h-16 items-center gap-4 px-6 lg:px-10">
+            <nav th:replace="~{fragments/layout :: compactnav('merchants')}"></nav>
+            <div class="hidden items-center gap-2 text-sm lg:flex">
+                <span class="text-zinc-400">Souq</span>
+                <span class="text-zinc-600">/</span>
+                <span class="font-medium text-white">Merchants &amp; Stock</span>
+            </div>
+            <div class="ml-auto flex items-center gap-2">
+                <button type="button" data-modal-open="addMerchantModal" class="btn btn-ghost">Register merchant</button>
+                <button type="button" data-modal-open="addStockModal" class="btn btn-emerald">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                    Add stock
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="px-6 py-10 lg:px-10">
+
+        <div class="rise mb-8">
+            <h1 class="text-[28px] font-semibold leading-tight tracking-tight text-white">Merchants &amp; Stock</h1>
+            <p class="mt-1.5 text-sm text-zinc-400">Onboard sellers and track the inventory each one holds per product.</p>
+        </div>
+
+        <section class="rise rise-2 grid grid-cols-1 gap-6 xl:grid-cols-3">
+
+            <!-- Merchants -->
+            <div class="surface overflow-hidden self-start rounded-2xl border border-zinc-800 bg-zinc-900/60 xl:col-span-1">
+                <div class="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+                    <div>
+                        <h2 class="text-sm font-semibold text-white">Merchants</h2>
+                        <p class="mt-0.5 text-xs text-zinc-400">Registered sellers</p>
+                    </div>
+                    <span class="pill pill-amber tabular-nums" id="merchantBadge" th:text="${merchants.size()}">0</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="data-grid">
+                        <thead>
+                        <tr>
+                            <th>Merchant</th>
+                            <th class="text-right">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="merchantsBody">
+                        <tr th:if="${merchants.empty}">
+                            <td colspan="2" class="px-6 py-14 text-center text-sm text-zinc-400">
+                                No merchants registered yet.
+                            </td>
+                        </tr>
+                        <tr th:each="merchant : ${merchants}"
+                            th:attr="data-id=${merchant.id}, data-name=${merchant.name}">
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-amber-500/25 to-orange-500/15 text-sm font-semibold text-amber-200 ring-1 ring-inset ring-amber-500/25"
+                                          th:text="${#strings.toUpperCase(#strings.substring(merchant.name, 0, 1))}">M</span>
+                                    <span>
+                                        <span class="block font-medium text-white" th:text="${merchant.name}">Merchant</span>
+                                        <span class="block font-mono text-xs text-zinc-500" th:text="${merchant.id}">m1</span>
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <span class="group/tip relative inline-flex">
+                                        <button type="button" aria-label="Edit merchant" class="js-edit icon-btn icon-btn-edit">
+                                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                        </button>
+                                        <span class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100 opacity-0 shadow-xl transition-opacity duration-150 group-hover/tip:opacity-100">Edit</span>
+                                    </span>
+                                    <span class="group/tip relative inline-flex">
+                                        <button type="button" aria-label="Delete merchant" class="js-delete icon-btn icon-btn-delete">
+                                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                        </button>
+                                        <span class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100 opacity-0 shadow-xl transition-opacity duration-150 group-hover/tip:opacity-100">Delete</span>
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Stock records -->
+            <div class="surface overflow-hidden self-start rounded-2xl border border-zinc-800 bg-zinc-900/60 xl:col-span-2">
+                <div class="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+                    <div>
+                        <h2 class="text-sm font-semibold text-white">Stock records</h2>
+                        <p class="mt-0.5 text-xs text-zinc-400">Inventory per merchant and product pairing</p>
+                    </div>
+                    <span class="pill pill-emerald tabular-nums" id="stockBadge" th:text="${stocks.size()}">0</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="data-grid">
+                        <thead>
+                        <tr>
+                            <th>Record</th>
+                            <th>Merchant</th>
+                            <th>Product</th>
+                            <th class="text-right">Units</th>
+                            <th class="text-right">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="stocksBody">
+                        <tr th:if="${stocks.empty}">
+                            <td colspan="5" class="px-6 py-14 text-center text-sm text-zinc-400">
+                                No stock records yet. Register a merchant, then allocate inventory.
+                            </td>
+                        </tr>
+                        <tr th:each="stock : ${stocks}"
+                            th:attr="data-id=${stock.id},
+                                     data-merchant=${stock.merchantId},
+                                     data-product=${stock.productId},
+                                     data-stock=${stock.stock}">
+                            <td class="cell-id" th:text="${stock.id}">s1</td>
+                            <td><span class="pill pill-amber" th:text="${stock.merchantId}">m1</span></td>
+                            <td><span class="pill pill-indigo" th:text="${stock.productId}">p1</span></td>
+                            <td class="text-right">
+                                <span class="pill tabular-nums"
+                                      th:classappend="${stock.stock &lt; 20} ? 'pill-rose' : 'pill-emerald'"
+                                      th:text="${stock.stock}">0</span>
+                            </td>
+                            <td>
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <span class="group/tip relative inline-flex">
+                                        <button type="button" aria-label="Edit stock record" class="js-edit icon-btn icon-btn-edit">
+                                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                        </button>
+                                        <span class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100 opacity-0 shadow-xl transition-opacity duration-150 group-hover/tip:opacity-100">Edit</span>
+                                    </span>
+                                    <span class="group/tip relative inline-flex">
+                                        <button type="button" aria-label="Delete stock record" class="js-delete icon-btn icon-btn-delete">
+                                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                        </button>
+                                        <span class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100 opacity-0 shadow-xl transition-opacity duration-150 group-hover/tip:opacity-100">Delete</span>
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+</div>
+
+<!-- ============================ Modals ============================ -->
+
+<div id="addMerchantModal" data-modal class="fixed inset-0 z-50 flex hidden items-center justify-center p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-zinc-950/80 opacity-0 backdrop-blur-md transition-opacity duration-200"></div>
+    <div data-modal-panel class="surface relative w-full max-w-md translate-y-3 scale-95 rounded-2xl border border-zinc-800 bg-zinc-900 opacity-0 shadow-2xl transition-all duration-200">
+        <form id="addMerchantForm">
+            <div class="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <span class="grid h-9 w-9 place-items-center rounded-lg bg-amber-500/12 text-amber-300 ring-1 ring-inset ring-amber-500/30">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M2 7h20"/></svg>
+                    </span>
+                    <h3 class="text-base font-semibold text-white">Register merchant</h3>
+                </div>
+                <button type="button" data-modal-close aria-label="Close dialog" class="rounded-md p-1 text-zinc-400 transition-colors hover:text-white">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-4 px-6 py-5">
+                <div>
+                    <label class="label" for="merAddId">Merchant ID</label>
+                    <input type="text" id="merAddId" name="id" required placeholder="m1" class="field">
+                </div>
+                <div>
+                    <label class="label" for="merAddName">Merchant name</label>
+                    <input type="text" id="merAddName" name="name" required minlength="4" placeholder="Jarir Bookstore" class="field">
+                    <p class="hint">At least 4 characters.</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t border-zinc-800 px-6 py-4">
+                <button type="button" data-modal-close class="btn btn-ghost">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save merchant</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editMerchantModal" data-modal class="fixed inset-0 z-50 flex hidden items-center justify-center p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-zinc-950/80 opacity-0 backdrop-blur-md transition-opacity duration-200"></div>
+    <div data-modal-panel class="surface relative w-full max-w-md translate-y-3 scale-95 rounded-2xl border border-zinc-800 bg-zinc-900 opacity-0 shadow-2xl transition-all duration-200">
+        <form id="editMerchantForm">
+            <input type="hidden" name="originalId">
+            <div class="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <span class="grid h-9 w-9 place-items-center rounded-lg bg-amber-500/12 text-amber-300 ring-1 ring-inset ring-amber-500/30">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    </span>
+                    <h3 class="text-base font-semibold text-white">Edit merchant</h3>
+                </div>
+                <button type="button" data-modal-close aria-label="Close dialog" class="rounded-md p-1 text-zinc-400 transition-colors hover:text-white">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-4 px-6 py-5">
+                <div>
+                    <label class="label" for="merEditId">Merchant ID</label>
+                    <input type="text" id="merEditId" name="id" readonly class="field">
+                </div>
+                <div>
+                    <label class="label" for="merEditName">Merchant name</label>
+                    <input type="text" id="merEditName" name="name" required minlength="4" class="field">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t border-zinc-800 px-6 py-4">
+                <button type="button" data-modal-close class="btn btn-ghost">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update merchant</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="addStockModal" data-modal class="fixed inset-0 z-50 flex hidden items-center justify-center p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-zinc-950/80 opacity-0 backdrop-blur-md transition-opacity duration-200"></div>
+    <div data-modal-panel class="surface relative w-full max-w-md translate-y-3 scale-95 rounded-2xl border border-zinc-800 bg-zinc-900 opacity-0 shadow-2xl transition-all duration-200">
+        <form id="addStockForm">
+            <div class="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <span class="grid h-9 w-9 place-items-center rounded-lg bg-emerald-500/12 text-emerald-300 ring-1 ring-inset ring-emerald-500/30">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                    </span>
+                    <h3 class="text-base font-semibold text-white">Add stock record</h3>
+                </div>
+                <button type="button" data-modal-close aria-label="Close dialog" class="rounded-md p-1 text-zinc-400 transition-colors hover:text-white">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-4 px-6 py-5">
+                <div>
+                    <label class="label" for="stockAddId">Stock ID</label>
+                    <input type="text" id="stockAddId" name="id" required placeholder="s1" class="field">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="label" for="stockAddMerchant">Merchant ID</label>
+                        <input type="text" id="stockAddMerchant" name="merchantId" required placeholder="m1" class="field">
+                    </div>
+                    <div>
+                        <label class="label" for="stockAddProduct">Product ID</label>
+                        <input type="text" id="stockAddProduct" name="productId" required placeholder="p1" class="field">
+                    </div>
+                </div>
+                <div>
+                    <label class="label" for="stockAddUnits">Units in stock</label>
+                    <input type="number" id="stockAddUnits" name="stock" min="11" step="1" required placeholder="50" class="field tabular-nums">
+                    <p class="hint">Opening stock must be more than 10 units.</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t border-zinc-800 px-6 py-4">
+                <button type="button" data-modal-close class="btn btn-ghost">Cancel</button>
+                <button type="submit" class="btn btn-emerald">Save record</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editStockModal" data-modal class="fixed inset-0 z-50 flex hidden items-center justify-center p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-zinc-950/80 opacity-0 backdrop-blur-md transition-opacity duration-200"></div>
+    <div data-modal-panel class="surface relative w-full max-w-md translate-y-3 scale-95 rounded-2xl border border-zinc-800 bg-zinc-900 opacity-0 shadow-2xl transition-all duration-200">
+        <form id="editStockForm">
+            <input type="hidden" name="originalId">
+            <div class="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <span class="grid h-9 w-9 place-items-center rounded-lg bg-emerald-500/12 text-emerald-300 ring-1 ring-inset ring-emerald-500/30">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    </span>
+                    <h3 class="text-base font-semibold text-white">Edit stock record</h3>
+                </div>
+                <button type="button" data-modal-close aria-label="Close dialog" class="rounded-md p-1 text-zinc-400 transition-colors hover:text-white">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-4 px-6 py-5">
+                <div>
+                    <label class="label" for="stockEditId">Stock ID</label>
+                    <input type="text" id="stockEditId" name="id" readonly class="field">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="label" for="stockEditMerchant">Merchant ID</label>
+                        <input type="text" id="stockEditMerchant" name="merchantId" required class="field">
+                    </div>
+                    <div>
+                        <label class="label" for="stockEditProduct">Product ID</label>
+                        <input type="text" id="stockEditProduct" name="productId" required class="field">
+                    </div>
+                </div>
+                <div>
+                    <label class="label" for="stockEditUnits">Units in stock</label>
+                    <input type="number" id="stockEditUnits" name="stock" min="11" step="1" required class="field tabular-nums">
+                    <p class="hint">Must stay above 10 units.</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t border-zinc-800 px-6 py-4">
+                <button type="button" data-modal-close class="btn btn-ghost">Cancel</button>
+                <button type="submit" class="btn btn-emerald">Update record</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: confirm}"></div>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+
+<script>
+    /* ---------------------------- Merchants ---------------------------- */
+
+    function merchantRow(m) {
+        return `
+        <tr data-id="${escapeHtml(m.id)}" data-name="${escapeHtml(m.name)}">
+            <td>
+                <div class="flex items-center gap-3">
+                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-amber-500/25 to-orange-500/15 text-sm font-semibold text-amber-200 ring-1 ring-inset ring-amber-500/25">${initials(m.name)}</span>
+                    <span>
+                        <span class="block font-medium text-white">${escapeHtml(m.name)}</span>
+                        <span class="block font-mono text-xs text-zinc-500">${escapeHtml(m.id)}</span>
+                    </span>
+                </div>
+            </td>
+            <td>${actionButtons('merchant')}</td>
+        </tr>`;
+    }
+
+    async function refreshMerchants() {
+        const merchants = await loadMerchants();
+        const body = document.getElementById('merchantsBody');
+        body.innerHTML = merchants.length
+            ? merchants.map(merchantRow).join('')
+            : emptyRow(2, 'No merchants registered yet.');
+        document.getElementById('merchantBadge').textContent = merchants.length;
+    }
+
+    document.getElementById('merchantsBody').addEventListener('click', (event) => {
+        const row = event.target.closest('tr');
+        if (!row || !row.dataset.id) return;
+
+        if (event.target.closest('.js-edit')) {
+            fillModal('editMerchantModal', {
+                originalId: row.dataset.id,
+                id: row.dataset.id,
+                name: row.dataset.name
+            });
+            return;
+        }
+
+        if (event.target.closest('.js-delete')) {
+            const id = row.dataset.id;
+            confirmAction('Delete merchant', `Merchant "${row.dataset.name}" will be removed permanently.`, async () => {
+                await apiCall('DELETE', `/api/v1/merchant/delete/${encodeURIComponent(id)}`);
+                showToast('Merchant deleted');
+                await refreshMerchants();
+            });
+        }
+    });
+
+    bindForm('addMerchantForm', async (fd, form) => {
+        await apiCall('POST', '/api/v1/merchant/add-merchant', {
+            id: fd.get('id').trim(),
+            name: fd.get('name').trim()
+        });
+        closeModal('addMerchantModal');
+        form.reset();
+        showToast('Merchant registered');
+        await refreshMerchants();
+    });
+
+    bindForm('editMerchantForm', async (fd) => {
+        const id = fd.get('originalId');
+        await apiCall('PUT', `/api/v1/merchant/update/${encodeURIComponent(id)}`, {
+            id: fd.get('id').trim(),
+            name: fd.get('name').trim()
+        });
+        closeModal('editMerchantModal');
+        showToast('Merchant updated');
+        await refreshMerchants();
+    });
+
+    /* ------------------------------ Stock ------------------------------ */
+
+    function stockRow(s) {
+        const tone = Number(s.stock) < 20 ? 'pill-rose' : 'pill-emerald';
+        return `
+        <tr data-id="${escapeHtml(s.id)}" data-merchant="${escapeHtml(s.merchantId)}"
+            data-product="${escapeHtml(s.productId)}" data-stock="${escapeHtml(s.stock)}">
+            <td class="cell-id">${escapeHtml(s.id)}</td>
+            <td><span class="pill pill-amber">${escapeHtml(s.merchantId)}</span></td>
+            <td><span class="pill pill-indigo">${escapeHtml(s.productId)}</span></td>
+            <td class="text-right"><span class="pill ${tone} tabular-nums">${escapeHtml(s.stock)}</span></td>
+            <td>${actionButtons('stock record')}</td>
+        </tr>`;
+    }
+
+    async function refreshStocks() {
+        const stocks = await loadStocks();
+        const body = document.getElementById('stocksBody');
+        body.innerHTML = stocks.length
+            ? stocks.map(stockRow).join('')
+            : emptyRow(5, 'No stock records yet. Register a merchant, then allocate inventory.');
+
+        document.getElementById('stockBadge').textContent = stocks.length;
+    }
+
+    document.getElementById('stocksBody').addEventListener('click', (event) => {
+        const row = event.target.closest('tr');
+        if (!row || !row.dataset.id) return;
+
+        if (event.target.closest('.js-edit')) {
+            fillModal('editStockModal', {
+                originalId: row.dataset.id,
+                id: row.dataset.id,
+                merchantId: row.dataset.merchant,
+                productId: row.dataset.product,
+                stock: row.dataset.stock
+            });
+            return;
+        }
+
+        if (event.target.closest('.js-delete')) {
+            const id = row.dataset.id;
+            confirmAction('Delete stock record', `Stock record "${id}" will be removed permanently.`, async () => {
+                await apiCall('DELETE', `/api/v1/merchantstock/delete/${encodeURIComponent(id)}`);
+                showToast('Stock record deleted');
+                await refreshStocks();
+            });
+        }
+    });
+
+    bindForm('addStockForm', async (fd, form) => {
+        await apiCall('POST', '/api/v1/merchantstock/add-merchantstock', {
+            id: fd.get('id').trim(),
+            merchantId: fd.get('merchantId').trim(),
+            productId: fd.get('productId').trim(),
+            stock: parseInt(fd.get('stock'), 10)
+        });
+        closeModal('addStockModal');
+        form.reset();
+        showToast('Stock record created');
+        await refreshStocks();
+    });
+
+    bindForm('editStockForm', async (fd) => {
+        const id = fd.get('originalId');
+        await apiCall('PUT', `/api/v1/merchantstock/update/${encodeURIComponent(id)}`, {
+            id: fd.get('id').trim(),
+            merchantId: fd.get('merchantId').trim(),
+            productId: fd.get('productId').trim(),
+            stock: parseInt(fd.get('stock'), 10)
+        });
+        closeModal('editStockModal');
+        showToast('Stock record updated');
+        await refreshStocks();
+    });
+</script>
+
+</body>
+</html>

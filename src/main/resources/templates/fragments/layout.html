@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | Souq'">Souq</title>
+    <link rel="icon" type="image/png" th:href="@{/img/favicon.png}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+
+<body class="bg-zinc-950 font-sans text-zinc-100 antialiased">
+
+<!-- ======================= Sidebar ======================= -->
+<aside th:fragment="sidebar(active)"
+       class="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-zinc-800 bg-zinc-900/70 backdrop-blur-xl lg:flex">
+
+    <div class="flex h-16 items-center justify-center border-b border-zinc-800 px-5">
+        <img th:src="@{/img/logo.png}" alt="Souq" class="h-7 w-auto">
+    </div>
+
+    <nav class="flex-1 space-y-7 overflow-y-auto px-4 py-6">
+        <div>
+            <p class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Overview</p>
+            <a th:href="@{/}" class="nav-link"
+               th:classappend="${active == 'dashboard'} ? 'nav-link-active' : ''">Dashboard</a>
+        </div>
+        <div>
+            <p class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Inventory</p>
+            <a th:href="@{/shop/products}" class="nav-link"
+               th:classappend="${active == 'products'} ? 'nav-link-active' : ''">Products</a>
+        </div>
+        <div>
+            <p class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Suppliers</p>
+            <a th:href="@{/shop/merchants}" class="nav-link"
+               th:classappend="${active == 'merchants'} ? 'nav-link-active' : ''">Merchants &amp; Stock</a>
+        </div>
+    </nav>
+
+</aside>
+
+<!-- ======================= Compact nav below lg ======================= -->
+<nav th:fragment="compactnav(active)" class="flex items-center gap-1 lg:hidden">
+    <img th:src="@{/img/logo-mark.png}" alt="Souq" class="mr-2 h-8 w-8">
+    <a th:href="@{/}" class="rounded-lg px-2.5 py-1.5 text-sm font-medium"
+       th:classappend="${active == 'dashboard'} ? 'bg-white/10 text-white' : 'text-zinc-400'">Dashboard</a>
+    <a th:href="@{/shop/products}" class="rounded-lg px-2.5 py-1.5 text-sm font-medium"
+       th:classappend="${active == 'products'} ? 'bg-white/10 text-white' : 'text-zinc-400'">Products</a>
+    <a th:href="@{/shop/merchants}" class="rounded-lg px-2.5 py-1.5 text-sm font-medium"
+       th:classappend="${active == 'merchants'} ? 'bg-white/10 text-white' : 'text-zinc-400'">Merchants</a>
+</nav>
+
+<!-- ======================= Ambient layer + toast host ======================= -->
+<div th:fragment="chrome">
+    <div class="ambient"></div>
+    <div id="toastHost" class="pointer-events-none fixed right-6 top-6 z-[60] flex flex-col gap-3"></div>
+</div>
+
+<!-- ======================= Confirm dialog ======================= -->
+<div th:fragment="confirm" id="confirmModal" data-modal
+     class="fixed inset-0 z-50 flex hidden items-center justify-center p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-zinc-950/80 opacity-0 backdrop-blur-md transition-opacity duration-200"></div>
+    <div data-modal-panel
+         class="surface relative w-full max-w-sm translate-y-3 scale-95 rounded-2xl border border-zinc-800 bg-zinc-900 p-6 opacity-0 shadow-2xl transition-all duration-200">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-rose-500/12 text-rose-300 ring-1 ring-inset ring-rose-500/30">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 9v4"/><path d="M12 17h.01"/>
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
+            </svg>
+        </span>
+        <h3 data-confirm-title class="mt-4 text-base font-semibold text-white">Confirm</h3>
+        <p data-confirm-message class="mt-1.5 text-sm leading-relaxed text-zinc-300">Are you sure?</p>
+        <div class="mt-6 flex justify-end gap-2">
+            <button type="button" data-modal-close class="btn btn-ghost">Cancel</button>
+            <button type="button" data-confirm-accept class="btn btn-danger">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script th:fragment="scripts" th:src="@{/js/app.js}"></script>
+
+</body>
+</html>

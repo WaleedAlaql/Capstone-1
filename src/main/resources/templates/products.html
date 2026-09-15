@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Products')}"></head>
+<body class="bg-zinc-950 font-sans text-zinc-100 antialiased">
+
+<div th:replace="~{fragments/layout :: chrome}"></div>
+<aside th:replace="~{fragments/layout :: sidebar('products')}"></aside>
+
+<div class="lg:pl-64">
+
+    <header class="sticky top-0 z-30 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-md">
+        <div class="flex h-16 items-center gap-4 px-6 lg:px-10">
+            <nav th:replace="~{fragments/layout :: compactnav('products')}"></nav>
+            <div class="hidden items-center gap-2 text-sm lg:flex">
+                <span class="text-zinc-400">Souq</span>
+                <span class="text-zinc-600">/</span>
+                <span class="font-medium text-white">Products</span>
+            </div>
+            <div class="ml-auto flex items-center gap-2">
+                <button type="button" data-modal-open="addCategoryModal" class="btn btn-ghost">Add category</button>
+                <button type="button" data-modal-open="addProductModal" class="btn btn-primary">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                    New product
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="px-6 py-10 lg:px-10">
+
+        <div class="rise mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div>
+                <h1 class="text-[28px] font-semibold leading-tight tracking-tight text-white">Products</h1>
+                <p class="mt-1.5 text-sm text-zinc-400">Every item in the inventory. Prices are recorded in SAR.</p>
+            </div>
+            <div>
+                <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">Items</p>
+                <p class="mt-1 text-lg font-semibold tabular-nums text-white" data-count="products" th:text="${products.size()}">0</p>
+            </div>
+        </div>
+
+        <div class="rise rise-2 grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <section class="surface self-start overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 xl:col-span-2">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-sm font-semibold text-white">Inventory</h2>
+                    <span class="pill pill-zinc tabular-nums" id="productBadge" th:text="${products.size()}">0</span>
+                </div>
+                <div class="relative">
+                    <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+                    </svg>
+                    <input type="search" id="productSearch" aria-label="Filter products"
+                           placeholder="Filter by name, ID, or category"
+                           class="field field-search w-72" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="data-grid">
+                    <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th class="text-right">Price</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="productsBody">
+                    <tr th:if="${products.empty}">
+                        <td colspan="4" class="px-6 py-14 text-center text-sm text-zinc-400">
+                            No products yet. Create a category, then add your first product.
+                        </td>
+                    </tr>
+                    <tr th:each="product : ${products}"
+                        th:attr="data-id=${product.id},
+                                 data-name=${product.name},
+                                 data-price=${product.price},
+                                 data-category=${product.categoryID}">
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-500/25 to-violet-500/15 text-sm font-semibold text-indigo-200 ring-1 ring-inset ring-indigo-500/25"
+                                      th:text="${#strings.toUpperCase(#strings.substring(product.name, 0, 1))}">P</span>
+                                <span>
+                                    <span class="block font-medium text-white" th:text="${product.name}">Name</span>
+                                    <span class="block font-mono text-xs text-zinc-500" th:text="${product.id}">p1</span>
+                                </span>
+                            </div>
+                        </td>
+                        <td><span class="pill pill-indigo" th:text="${product.categoryID}">c1</span></td>
+                        <td class="text-right tabular-nums">
+                            <span class="font-medium text-white" th:text="${#numbers.formatDecimal(product.price, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                            <span class="ml-1 text-xs text-zinc-500">SAR</span>
+                        </td>
+                        <td>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="group/tip relative inline-flex">
+                                    <button type="button" aria-label="Edit product" class="js-edit icon-btn icon-btn-edit">
+                                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                    </button>
+                                    <span class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100 opacity-0 shadow-xl transition-opacity duration-150 group-hover/tip:opacity-100">Edit</span>
+                                </span>
+                                <span class="group/tip relative inline-flex">
+                                    <button type="button" aria-label="Delete product" class="js-delete icon-btn icon-btn-delete">
+                                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    </button>
+                                    <span class="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-zinc-100 opacity-0 shadow-xl transition-opacity duration-150 group-hover/tip:opacity-100">Delete</span>
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Right rail: category breakdown -->
+        <div class="surface self-start rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5">
+            <div class="flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-white">Categories</h2>
+                <span class="pill pill-violet tabular-nums" id="categoryBadge">0</span>
+            </div>
+            <p class="mt-0.5 text-xs text-zinc-400">Products assigned to each group</p>
+            <div id="categoryList" class="mt-4 space-y-2">
+                <p class="text-sm text-zinc-500">Loading categories...</p>
+            </div>
+        </div>
+
+        </div>
+
+    </main>
+</div>
+
+<!-- ============================ Modals ============================ -->
+
+<div id="addCategoryModal" data-modal class="fixed inset-0 z-50 flex hidden items-center justify-center p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-zinc-950/80 opacity-0 backdrop-blur-md transition-opacity duration-200"></div>
+    <div data-modal-panel class="surface relative w-full max-w-md translate-y-3 scale-95 rounded-2xl border border-zinc-800 bg-zinc-900 opacity-0 shadow-2xl transition-all duration-200">
+        <form id="addCategoryForm">
+            <div class="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <span class="grid h-9 w-9 place-items-center rounded-lg bg-violet-500/12 text-violet-300 ring-1 ring-inset ring-violet-500/30">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m6.08 9.5-3.48 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83L17.9 9.5"/></svg>
+                    </span>
+                    <h3 class="text-base font-semibold text-white">Add category</h3>
+                </div>
+                <button type="button" data-modal-close aria-label="Close dialog" class="rounded-md p-1 text-zinc-400 transition-colors hover:text-white">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-4 px-6 py-5">
+                <div>
+                    <label class="label" for="catAddId">Category ID</label>
+                    <input type="text" id="catAddId" name="id" required placeholder="c1" class="field">
+                </div>
+                <div>
+                    <label class="label" for="catAddName">Category name</label>
+                    <input type="text" id="catAddName" name="name" required minlength="4" placeholder="Electronics" class="field">
+                    <p class="hint">At least 4 characters.</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t border-zinc-800 px-6 py-4">
+                <button type="button" data-modal-close class="btn btn-ghost">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save category</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="addProductModal" data-modal class="fixed inset-0 z-50 flex hidden items-center justify-center p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-zinc-950/80 opacity-0 backdrop-blur-md transition-opacity duration-200"></div>
+    <div data-modal-panel class="surface relative w-full max-w-md translate-y-3 scale-95 rounded-2xl border border-zinc-800 bg-zinc-900 opacity-0 shadow-2xl transition-all duration-200">
+        <form id="addProductForm">
+            <div class="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <span class="grid h-9 w-9 place-items-center rounded-lg bg-indigo-500/12 text-indigo-300 ring-1 ring-inset ring-indigo-500/30">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                    </span>
+                    <h3 class="text-base font-semibold text-white">Add product</h3>
+                </div>
+                <button type="button" data-modal-close aria-label="Close dialog" class="rounded-md p-1 text-zinc-400 transition-colors hover:text-white">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-4 px-6 py-5">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="label" for="prodAddId">Product ID</label>
+                        <input type="text" id="prodAddId" name="id" required placeholder="p1" class="field">
+                    </div>
+                    <div>
+                        <label class="label" for="prodAddCategory">Category ID</label>
+                        <input type="text" id="prodAddCategory" name="categoryID" required placeholder="c1" class="field">
+                    </div>
+                </div>
+                <div>
+                    <label class="label" for="prodAddName">Product name</label>
+                    <input type="text" id="prodAddName" name="name" required minlength="4" placeholder="Wireless Keyboard" class="field">
+                </div>
+                <div>
+                    <label class="label" for="prodAddPrice">Price (SAR)</label>
+                    <input type="number" id="prodAddPrice" name="price" step="0.01" min="0.01" required placeholder="249.00" class="field tabular-nums">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t border-zinc-800 px-6 py-4">
+                <button type="button" data-modal-close class="btn btn-ghost">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save product</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editProductModal" data-modal class="fixed inset-0 z-50 flex hidden items-center justify-center p-4">
+    <div data-modal-backdrop class="absolute inset-0 bg-zinc-950/80 opacity-0 backdrop-blur-md transition-opacity duration-200"></div>
+    <div data-modal-panel class="surface relative w-full max-w-md translate-y-3 scale-95 rounded-2xl border border-zinc-800 bg-zinc-900 opacity-0 shadow-2xl transition-all duration-200">
+        <form id="editProductForm">
+            <input type="hidden" name="originalId">
+            <div class="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <span class="grid h-9 w-9 place-items-center rounded-lg bg-indigo-500/12 text-indigo-300 ring-1 ring-inset ring-indigo-500/30">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    </span>
+                    <h3 class="text-base font-semibold text-white">Edit product</h3>
+                </div>
+                <button type="button" data-modal-close aria-label="Close dialog" class="rounded-md p-1 text-zinc-400 transition-colors hover:text-white">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="space-y-4 px-6 py-5">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="label" for="prodEditId">Product ID</label>
+                        <input type="text" id="prodEditId" name="id" readonly class="field">
+                    </div>
+                    <div>
+                        <label class="label" for="prodEditCategory">Category ID</label>
+                        <input type="text" id="prodEditCategory" name="categoryID" required class="field">
+                    </div>
+                </div>
+                <div>
+                    <label class="label" for="prodEditName">Product name</label>
+                    <input type="text" id="prodEditName" name="name" required minlength="4" class="field">
+                </div>
+                <div>
+                    <label class="label" for="prodEditPrice">Price (SAR)</label>
+                    <input type="number" id="prodEditPrice" name="price" step="0.01" min="0.01" required class="field tabular-nums">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t border-zinc-800 px-6 py-4">
+                <button type="button" data-modal-close class="btn btn-ghost">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update product</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: confirm}"></div>
+<script th:replace="~{fragments/layout :: scripts}"></script>
+
+<script>
+    function productRow(p) {
+        return `
+        <tr data-id="${escapeHtml(p.id)}" data-name="${escapeHtml(p.name)}"
+            data-price="${escapeHtml(p.price)}" data-category="${escapeHtml(p.categoryID)}">
+            <td>
+                <div class="flex items-center gap-3">
+                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-500/25 to-violet-500/15 text-sm font-semibold text-indigo-200 ring-1 ring-inset ring-indigo-500/25">${initials(p.name)}</span>
+                    <span>
+                        <span class="block font-medium text-white">${escapeHtml(p.name)}</span>
+                        <span class="block font-mono text-xs text-zinc-500">${escapeHtml(p.id)}</span>
+                    </span>
+                </div>
+            </td>
+            <td><span class="pill pill-indigo">${escapeHtml(p.categoryID)}</span></td>
+            <td class="text-right tabular-nums">
+                <span class="font-medium text-white">${formatMoney(p.price)}</span>
+                <span class="ml-1 text-xs text-zinc-500">SAR</span>
+            </td>
+            <td>${actionButtons('product')}</td>
+        </tr>`;
+    }
+
+    function renderCategoryList(products, categories) {
+        document.getElementById('categoryBadge').textContent = categories.length;
+        const host = document.getElementById('categoryList');
+
+        if (!categories.length) {
+            host.innerHTML = '<p class="text-sm text-zinc-400">No categories yet. Add one to get started.</p>';
+            return;
+        }
+
+        host.innerHTML = categories.map(category => {
+            const count = products.filter(p => p.categoryID === category.id).length;
+            return `
+                <div class="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/70 px-3 py-2.5">
+                    <span class="min-w-0">
+                        <span class="block truncate text-sm font-medium text-zinc-100">${escapeHtml(category.name)}</span>
+                        <span class="block font-mono text-xs text-zinc-500">${escapeHtml(category.id)}</span>
+                    </span>
+                    <span class="pill pill-indigo shrink-0 tabular-nums">${count}</span>
+                </div>`;
+        }).join('');
+    }
+
+    async function refreshProducts() {
+        const [products, categories] = await Promise.all([loadProducts(), loadCategories()]);
+        const body = document.getElementById('productsBody');
+        body.innerHTML = products.length
+            ? products.map(productRow).join('')
+            : emptyRow(4, 'No products yet. Create a category, then add your first product.');
+
+        document.getElementById('productBadge').textContent = products.length;
+        document.querySelector('[data-count="products"]').textContent = products.length;
+
+        renderCategoryList(products, categories);
+        applyFilter();
+    }
+
+    /* Client-side filtering across the visible grid rows. */
+    function applyFilter() {
+        const query = document.getElementById('productSearch').value.trim().toLowerCase();
+        document.querySelectorAll('#productsBody tr[data-id]').forEach(row => {
+            const haystack = `${row.dataset.id} ${row.dataset.name} ${row.dataset.category}`.toLowerCase();
+            row.hidden = query !== '' && !haystack.includes(query);
+        });
+    }
+
+    document.getElementById('productSearch').addEventListener('input', applyFilter);
+
+    document.getElementById('productsBody').addEventListener('click', (event) => {
+        const row = event.target.closest('tr');
+        if (!row || !row.dataset.id) return;
+
+        if (event.target.closest('.js-edit')) {
+            fillModal('editProductModal', {
+                originalId: row.dataset.id,
+                id: row.dataset.id,
+                name: row.dataset.name,
+                price: row.dataset.price,
+                categoryID: row.dataset.category
+            });
+            return;
+        }
+
+        if (event.target.closest('.js-delete')) {
+            const id = row.dataset.id;
+            confirmAction('Delete product', `Product "${row.dataset.name}" will be removed permanently.`, async () => {
+                await apiCall('DELETE', `/api/v1/product/delete/${encodeURIComponent(id)}`);
+                showToast('Product deleted');
+                await refreshProducts();
+            });
+        }
+    });
+
+    bindForm('addCategoryForm', async (fd, form) => {
+        await apiCall('POST', '/api/v1/category/add-category', {
+            id: fd.get('id').trim(),
+            name: fd.get('name').trim()
+        });
+        closeModal('addCategoryModal');
+        form.reset();
+        showToast('Category created');
+        await refreshProducts();
+    });
+
+    bindForm('addProductForm', async (fd, form) => {
+        await apiCall('POST', '/api/v1/product/add-product', {
+            id: fd.get('id').trim(),
+            name: fd.get('name').trim(),
+            price: parseFloat(fd.get('price')),
+            categoryID: fd.get('categoryID').trim()
+        });
+        closeModal('addProductModal');
+        form.reset();
+        showToast('Product created');
+        await refreshProducts();
+    });
+
+    bindForm('editProductForm', async (fd) => {
+        const id = fd.get('originalId');
+        await apiCall('PUT', `/api/v1/product/update/${encodeURIComponent(id)}`, {
+            id: fd.get('id').trim(),
+            name: fd.get('name').trim(),
+            price: parseFloat(fd.get('price')),
+            categoryID: fd.get('categoryID').trim()
+        });
+        closeModal('editProductModal');
+        showToast('Product updated');
+        await refreshProducts();
+    });
+
+    // The right rail has no server-rendered content, so populate it on load.
+    Promise.all([loadProducts(), loadCategories()])
+        .then(([products, categories]) => renderCategoryList(products, categories))
+        .catch(() => {
+            document.getElementById('categoryList').innerHTML =
+                '<p class="text-sm text-zinc-400">Categories unavailable.</p>';
+        });
+</script>
+
+</body>
+</html>
