@@ -7,7 +7,7 @@ A robust and secure backend e-commerce system built with Java 17 and Spring Boot
 - **Language:** Java 17
 - **Framework:** Spring Boot 3
 - **Build Tool:** Maven
-- **Architecture:** Layered Architecture (Controller, Service, Repository/Model)
+- **Architecture:** Layered Architecture (Controller, Service, Model)
 - **Validation:** Jakarta Validation
 - **Database Simulation:** In-memory Collections (ArrayList / Mock Database)
 
