@@ -115,20 +115,6 @@ public class UserController {
     }
 
     /*
-    Extra Endpoint for refund
-     */
-    @PostMapping("/refund/{userId}/{productId}/{merchantId}")
-    public ResponseEntity<ApiResponse> refundProduct(@PathVariable String userId, @PathVariable String productId, @PathVariable String merchantId) {
-        int result = userService.refundProduct(userId, productId, merchantId);
-
-        if (result == 1) {
-            return ResponseEntity.status(400).body(new ApiResponse("Invalid user ID, product ID, or merchant stock ID", null));
-        }
-
-        return ResponseEntity.status(200).body(new ApiResponse("Product refunded successfully, balance and stock updated", null));
-    }
-
-    /*
     Extra Endpoint give the admin the ability to delete a regular customer but admin can not delete another admin
      */
     @DeleteMapping("/admin-delete/{adminId}/{targetUserId}")

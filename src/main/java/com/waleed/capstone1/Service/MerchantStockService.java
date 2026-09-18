@@ -59,14 +59,17 @@ public class MerchantStockService {
         return merchantStocks.removeIf(s -> s.getId().equals(id));
     }
 
-    public int addMoreStock(String productId, String merchantId, int additionalStock) {
-        for (MerchantStock stock : merchantStocks) {
-            if (stock.getProductId().equals(productId) && stock.getMerchantId().equals(merchantId)) {
-                stock.setStock(stock.getStock() + additionalStock);
-                return 1; // Success
-            }
+    public int addMoreStock(String merchantId, String productId, int additionalStock) {
+        if (additionalStock <= 0) {
+            return 1; // Quantity must be greater than 0
         }
-        return 0; // Not found
+        MerchantStock stock = getStockByProductAndMerchant(productId, merchantId);
+        if (stock == null) {
+            return 2; // Stock record not found
+        }
+
+        stock.setStock(stock.getStock() + additionalStock);
+        return 0; // Success
     }
 
     public MerchantStock getStockByProductAndMerchant(String productId, String merchantId) {

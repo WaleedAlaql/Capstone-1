@@ -126,25 +126,6 @@ public class UserService {
     }
 
     /*
-    Extra Endpoint refund a product
-     */
-    public int refundProduct(String userId, String productId, String merchantId) {
-        User user = getUserById(userId);
-        Product product = productService.getProductById(productId);
-        MerchantStock targetStock = merchantStockService.getStockByProductAndMerchant(productId, merchantId);
-
-        if (user == null || product == null || targetStock == null) {
-            return 1; // Invalid IDs
-        }
-
-        // Refund logic: Increase user balance and increase stock
-        user.setBalance(user.getBalance() + product.getPrice());
-        targetStock.setStock(targetStock.getStock() + 1);
-
-        return 0; // Success
-    }
-
-    /*
     Extra Endpoint give the admin the ability to delete a regular customer but admin can not delete another admin
      */
     public int adminDeleteCustomer(String adminId, String targetUserId) {

@@ -70,10 +70,17 @@ public class MerchantStockController {
 
     @PutMapping("/addstock/{productId}/{merchantId}/{amount}")
     public ResponseEntity<ApiResponse> addMoreStock(@PathVariable String productId, @PathVariable String merchantId, @PathVariable int amount) {
-        int result = merchantStockService.addMoreStock(productId, merchantId, amount);
-        if (result == 0) {
-            return ResponseEntity.status(400).body(new ApiResponse("Product or Merchant Stock combination not found", null));
+
+        int result = merchantStockService.addMoreStock(merchantId, productId, amount);
+
+        if (result == 1) {
+            return ResponseEntity.status(400).body(new ApiResponse("Stock amount must be greater than 0", null));
         }
+
+        if (result == 2) {
+            return ResponseEntity.status(404).body(new ApiResponse("Product or Merchant Stock combination not found", null));
+        }
+
         return ResponseEntity.status(200).body(new ApiResponse("Stock added successfully", null));
     }
 }

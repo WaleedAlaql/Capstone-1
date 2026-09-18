@@ -2,12 +2,16 @@ package com.waleed.capstone1.Controller;
 
 import com.waleed.capstone1.Api.ApiResponse;
 import com.waleed.capstone1.Entity.Product;
+import com.waleed.capstone1.Entity.User;
 import com.waleed.capstone1.Service.ProductService;
+import com.waleed.capstone1.Service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/product")
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
+    private final UserService userService;
 
     @GetMapping("/all-products")
     public ResponseEntity<ApiResponse> getProducts() {
@@ -69,26 +74,35 @@ public class ProductController {
 
         return ResponseEntity.status(200).body(new ApiResponse("Success", productService.getProductsByCategory(categoryId)));
     }
-    
+
     @GetMapping("/search/{name}")
-    public ResponseEntity<ApiResponse> searchProducts(@PathVariable String name) {
-        return ResponseEntity.status(200).body(new ApiResponse("Success", productService.searchProductsByName(name)));
+    public ResponseEntity<ApiResponse> searchByName(@PathVariable String name) {
+        List<Product> products = productService.searchProductsByName(name);
+
+        if (products == null || products.isEmpty()) {
+            return ResponseEntity.status(400).body(new ApiResponse("No products found matching this name", null));
+        }
+
+        return ResponseEntity.status(200).body(new ApiResponse("Success", products));
     }
 
     /*
     Extra Endpoint for discount
      */
-    @PutMapping("/discount/{categoryId}/{percentage}")
-    public ResponseEntity<ApiResponse> applyDiscount(@PathVariable String categoryId, @PathVariable double percentage) {
+    @PutMapping("/discount/{adminId}/{categoryId}/{percentage}")
+    public ResponseEntity<ApiResponse> applyDiscount(@PathVariable String adminId, @PathVariable String categoryId, @PathVariable double percentage) {
+
+        User admin = userService.getUserById(adminId);
+        if (admin == null) {
+            return ResponseEntity.status(404).body(new ApiResponse("Admin not found", null));
+        }
+        if (!admin.getRole().equalsIgnoreCase("admin")) {
+            return ResponseEntity.status(403).body(new ApiResponse("Access denied: Only admins can apply discounts", null));
+        }
+
         int result = productService.applyDiscountToCategory(categoryId, percentage);
         if (result == 1) {
             return ResponseEntity.status(404).body(new ApiResponse("Category not found", null));
-        }
-        if (result == 2) {
-            return ResponseEntity.status(400).body(new ApiResponse("Invalid discount percentage (must be between 0 and 100)", null));
-        }
-        if (result == 3) {
-            return ResponseEntity.status(404).body(new ApiResponse("No products found for this category", null));
         }
 
         return ResponseEntity.status(200).body(new ApiResponse("Discount applied successfully", null));

@@ -1,6 +1,7 @@
 package com.waleed.capstone1.Service;
 
 import com.waleed.capstone1.Entity.Product;
+import com.waleed.capstone1.Entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
@@ -83,22 +84,17 @@ public class ProductService {
     /*
     Extra Endpoint apply a discount for a specific category
      */
-    public int applyDiscountToCategory(String categoryId, double discountPercentage) {
+    public int applyDiscountToCategory(String categoryId, double percentage) {
         if (!categoryService.checkCategoryExists(categoryId)) {
             return 1; // Category not found
         }
-        if (discountPercentage <= 0 || discountPercentage >= 100) {
-            return 2; // Invalid percentage
-        }
 
-        boolean updatedAny = false;
+        // Apply discount logic to products in this category...
+        List<Product> products = getProductsByCategory(categoryId);
         for (Product p : products) {
-            if (p.getCategoryID().equals(categoryId)) {
-                double newPrice = p.getPrice() - (p.getPrice() * (discountPercentage / 100.0));
-                p.setPrice(newPrice);
-                updatedAny = true;
-            }
+            double newPrice = p.getPrice() - (p.getPrice() * (percentage / 100.0));
+            p.setPrice(newPrice);
         }
-        return updatedAny ? 0 : 3; // 0 = Success, 3 = No products found in this category
+        return 0; // Success
     }
 }
